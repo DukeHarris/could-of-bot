@@ -70,7 +70,6 @@ def main():
 
 def reply_to(comment, word):
     print(comment.id)
-    print(comment.body)
     comment.reply("It's {} **HAVE**, not {} **OF**! \n\n See [Grammar Errors](http://www.grammarerrors.com/grammar/could-of-would-of-should-of/) for more information.".format(word, word))
     replied_to.add(comment.id)
     with open("replied_to.txt", "a") as f:
