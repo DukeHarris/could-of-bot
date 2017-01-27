@@ -2,6 +2,7 @@ import praw
 import datetime
 import os
 import re
+import nltk
 from time import sleep
 from configparser import ConfigParser
 
@@ -40,8 +41,8 @@ def main():
         client_secret = config['reddit']['client_secret']
     )
 
-    # filter "(..) of course" and all permutations of it to account for typos
-    pattern = re.compile(r".*\b(could|should|would)\s*of\b(?!\s*\b[course]+\b)")
+    # also match the next word for NL analysis
+    pattern = re.compile(r".*\b(could|should|would)\s*of\b\s*(\b\w+\b)?")
     running = True
     while running:
         try:
@@ -55,8 +56,17 @@ def main():
 
                     match = pattern.match(comment.body.lower())
                     if match:
-                        reply_to(comment, match.groups()[0])
-
+                        if len(match.groups()) == 1:
+                            reply_to(comment, match.groups()[0])
+                        else:
+                            # build a sentence for nltk
+                            testString = "I {} have {}".format(match.groups()[0], match.groups()[1])
+                            text = nltk.word_tokenize(testString)
+                            result = nltk.pos_tag(text)
+                            print(testString, result[3][1])
+                            # check if the last word is a verb, past participle
+                            if result[3][1] == "VBN":
+                                reply_to(comment, match.groups()[0])
 
         except KeyboardInterrupt:
             running = False
