@@ -1,3 +1,5 @@
 [reddit]
 user = could-of-bot
 password = tHepAssword
+client_id = *********
+client_secret = ************

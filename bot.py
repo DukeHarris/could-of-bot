@@ -1,11 +1,9 @@
 import praw
 import datetime
 import os
+import re
 from time import sleep
 from configparser import ConfigParser
-
-reddit = praw.Reddit('Could-of-bot 0.1 by u/DukeHarris see '
-                'https://github.com/DukeHarris/could-of-bot')
 
 
 # Have we run this code before? If not, create an empty list
@@ -22,7 +20,7 @@ else:
 def main():
 
     print("================================")
-    print('Could-of-bot 0.1 by u/DukeHarris')
+    print('Could-of-bot 0.2 by u/DukeHarris')
     print("================================")
 
     # Check for config file
@@ -33,33 +31,35 @@ def main():
     config = ConfigParser()
     config.read('config.ini')
 
-    reddit.login(config['reddit']['user'], config['reddit']['password'], disable_warning=True)
+    reddit = praw.Reddit(
+        user_agent = 'Could-of-bot 0.2 by u/DukeHarris see '
+                'https://github.com/DukeHarris/could-of-bot',
+        username = config['reddit']['user'],
+        password = config['reddit']['password'],
+        client_id = config['reddit']['client_id'],
+        client_secret = config['reddit']['client_secret']
+    )
 
-
+    # filter "(..) of course" and all permutations of it to account for typos
+    pattern = re.compile(r".*\b(could|should|would)\s*of\b(?!\s*\b[course]+\b)")
     running = True
     while running:
         try:
 
-            comments = praw.helpers.comment_stream(reddit, "all")
+            comments = reddit.subreddit('all').stream.comments()
 
             for comment in comments:
                 if  comment.author is not None and \
                     comment.author.name.lower() != config['reddit']['user'] and \
                     comment.id not in replied_to:
 
-                        if "could of " in comment.body.lower():
-                            reply_to(comment, "could")
-                        elif "should of " in comment.body.lower():
-                            reply_to(comment, "should")
-                        elif "would of " in comment.body.lower():
-                            reply_to(comment, "would")
+                    match = pattern.match(comment.body.lower())
+                    if match:
+                        reply_to(comment, match.groups()[0])
+
 
         except KeyboardInterrupt:
             running = False
-        except praw.errors.RateLimitExceeded as e:
-            print("[Error] Rate limit exceeded. Sleeping for {}...".format(e.sleep_time))
-            sleep(e.sleep_time)
-            continue
         except Exception as e:
             now = datetime.datetime.now()
             print(now.strftime("%m-%d-%Y %H:%M"))
@@ -69,8 +69,8 @@ def main():
             continue
 
 def reply_to(comment, word):
-    print(comment.id)
-    comment.reply("It's {} **HAVE**, not {} **OF**! \n\n See [Grammar Errors](http://www.grammarerrors.com/grammar/could-of-would-of-should-of/) for more information.".format(word, word))
+    print(comment.body.lower())
+    comment.reply("It's either {} **HAVE** or {}**'VE**, but never {} **OF** \n\n See [Grammar Errors](http://www.grammarerrors.com/grammar/could-of-would-of-should-of/) for more information.".format(word, word, word))
     replied_to.add(comment.id)
     with open("replied_to.txt", "a") as f:
         f.write(comment.id + "\n")
