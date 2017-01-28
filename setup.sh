@@ -1,3 +1,3 @@
 #!/bin/bash
-pip install -f requirements.txt
-python -m nltk.downloader punkt avergaged_perceptron_tagger
+sudo pip3 install -r requirements.txt
+python3 -m nltk.downloader punkt averaged_perceptron_tagger
