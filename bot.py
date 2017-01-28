@@ -66,7 +66,7 @@ def main():
                             print(testString, result[3][1])
                             # check if the last word is a verb, past participle
                             # or verb, past tense
-                            if result[3][1] == "VBN" or if result[3][1] == "VBD":
+                            if result[3][1] == "VBN" or result[3][1] == "VBD":
                                 reply_to(comment, match.groups()[0])
 
         except KeyboardInterrupt:
