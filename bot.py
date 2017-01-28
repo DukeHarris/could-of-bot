@@ -65,7 +65,8 @@ def main():
                             result = nltk.pos_tag(text)
                             print(testString, result[3][1])
                             # check if the last word is a verb, past participle
-                            if result[3][1] == "VBN":
+                            # or verb, past tense
+                            if result[3][1] == "VBN" or if result[3][1] == "VBD":
                                 reply_to(comment, match.groups()[0])
 
         except KeyboardInterrupt:
@@ -80,7 +81,7 @@ def main():
 
 def reply_to(comment, word):
     print(comment.body.lower())
-    comment.reply("It's either {} **HAVE** or {}**'VE**, but never {} **OF** \n\n See [Grammar Errors](http://www.grammarerrors.com/grammar/could-of-would-of-should-of/) for more information.".format(word, word, word))
+    comment.reply("It's either {} **HAVE** or {}**'VE**, but never {} **OF**. \n\n See [Grammar Errors](http://www.grammarerrors.com/grammar/could-of-would-of-should-of/) for more information.".format(word, word, word))
     replied_to.add(comment.id)
     with open("replied_to.txt", "a") as f:
         f.write(comment.id + "\n")
